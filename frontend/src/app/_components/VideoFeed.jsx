@@ -14,6 +14,8 @@ const VideoFeed = () => {
   const router = useRouter();
   const [exercise, setExercise] = useState("");
   const [reps, setReps] = useState(0);
+  const [selectedCameraId, setCameraId] = useState(0);
+  const [cameraOptions, setCameraOptions] = useState([]);
   const [isWebcamOn, setIsWebcamOn] = useState(true);
   const [poseLandmarker, setPoseLandmarker] = useState(null);
   const displayHeight = 480;
@@ -28,16 +30,21 @@ const VideoFeed = () => {
       setExercise(decodeURIComponent(exerciseName));
     }
 
-    startVideo();
+    getConnectedCameras();
+
     const pose = createPoseLandmarker();
     videoRef.current.addEventListener("loadeddata", () => predictWebcam(pose));
-    }, []);
+  }, []);
+
+  useEffect(() => {
+    startVideo(selectedCameraId)
+  }, [selectedCameraId])
 
   // Start webcam
-  const startVideo = () => {
+  const startVideo = (cameraId) => {
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
       navigator.mediaDevices
-        .getUserMedia({ video: true })
+        .getUserMedia({ video: { deviceId: cameraId } })
         .then((stream) => {
           if (videoRef.current) {
             videoRef.current.srcObject = stream;
@@ -122,6 +129,21 @@ const VideoFeed = () => {
     router.push("/");
   };
 
+  const getConnectedCameras = () => {
+    console.log("enumerating")
+    navigator.mediaDevices.enumerateDevices().then(function (devices) {
+      const options = [];
+      for (var i = 0; i < devices.length; i++) {
+        var device = devices[i];
+        if (device.kind === 'videoinput') {
+          options.push({ value: device.deviceId, label: device.label || 'camera ' + (i + 1) })
+        }
+      };
+
+      setCameraOptions(options);
+    });
+  }
+
   return (
     <div className="flex flex-col h-screen bg-gray-900">
       {/* Top Bar with Home Button, Exercise, and Reps */}
@@ -141,12 +163,12 @@ const VideoFeed = () => {
       </div>
 
       {/* Video Feed Section */}
-      <div className="flex-grow flex items-center justify-center">
+      <div className="flex flex-grow flex-col items-center justify-center">
         <div className="relative">
           <video
             ref={videoRef}
             autoPlay
-            className="asbolute z-0 top-0 left-0 border-2 border-gray-700"
+            className="z-0 top-0 left-0 border-2 border-gray-700"
             width={displayWidth}
             height={displayHeight}
             onError={(e) => console.error("Video error:", e)}
@@ -159,6 +181,11 @@ const VideoFeed = () => {
             ref={canvasRef}
           ></canvas>
         </div>
+        <select value={selectedCameraId}
+          onChange={e => setCameraId(e.target.value)}
+        >
+          {cameraOptions.map(option => <option value={option.value}>{option.label}</option>)}
+        </select>
       </div>
 
       {/* Feedback Box */}
@@ -170,7 +197,7 @@ const VideoFeed = () => {
           </p>
         </div>
       </div>
-    </div>
+    </div >
   );
 };
 
