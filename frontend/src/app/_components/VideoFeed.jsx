@@ -16,8 +16,6 @@ const VideoFeed = () => {
   const [reps, setReps] = useState(0);
   const [selectedCameraId, setCameraId] = useState(0);
   const [cameraOptions, setCameraOptions] = useState([]);
-  const [isWebcamOn, setIsWebcamOn] = useState(true);
-  const [poseLandmarker, setPoseLandmarker] = useState(null);
   const displayHeight = 480;
   const displayWidth = 640;
 
@@ -31,24 +29,24 @@ const VideoFeed = () => {
     }
 
     getConnectedCameras();
-
-    const pose = createPoseLandmarker();
-    videoRef.current.addEventListener("loadeddata", () => predictWebcam(pose));
   }, []);
 
   useEffect(() => {
-    startVideo(selectedCameraId)
+    // Disable prediction, if any, before restarting pipeline
+    videoRef.current.removeEventListener("loadeddata", () => { });
+    startPipeline(selectedCameraId);
   }, [selectedCameraId])
 
   // Start webcam
-  const startVideo = (cameraId) => {
+  const startPipeline = (cameraId) => {
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-      navigator.mediaDevices
-        .getUserMedia({ video: { deviceId: cameraId } })
-        .then((stream) => {
-          if (videoRef.current) {
-            videoRef.current.srcObject = stream;
-          }
+      Promise.all([
+        navigator.mediaDevices.getUserMedia({ video: { deviceId: cameraId } }),
+        createPoseLandmarker()
+      ])
+        .then((promises) => {
+          videoRef.current.srcObject = promises[0];
+          videoRef.current.addEventListener("loadeddata", () => predictWebcam(promises[1]));
         })
         .catch((err) => {
           console.error("Error accessing camera: ", err);
@@ -89,7 +87,6 @@ const VideoFeed = () => {
   };
 
   const predictWebcam = async (poseLandmarker) => {
-    poseLandmarker = await poseLandmarker;
     const canvasCtx = canvasRef.current.getContext("2d");
     const drawingUtils = new DrawingUtils(canvasCtx);
     let lastVideoTime = -1;
@@ -130,7 +127,6 @@ const VideoFeed = () => {
   };
 
   const getConnectedCameras = () => {
-    console.log("enumerating")
     navigator.mediaDevices.enumerateDevices().then(function (devices) {
       const options = [];
       for (var i = 0; i < devices.length; i++) {
@@ -184,7 +180,7 @@ const VideoFeed = () => {
         <select value={selectedCameraId}
           onChange={e => setCameraId(e.target.value)}
         >
-          {cameraOptions.map(option => <option value={option.value}>{option.label}</option>)}
+          {cameraOptions.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}
         </select>
       </div>
 
