@@ -8,6 +8,8 @@ mp_pose = mp.solutions.pose
 
 app = Flask(__name__)
 
+WHITE = (255, 255, 255)
+
 
 def calculate_angle(a, b, c):
     a = np.array(a)  # First
@@ -23,6 +25,56 @@ def calculate_angle(a, b, c):
         angle = 360 - angle
 
     return angle
+
+
+def draw_rep_counter(image, counter, stage):
+    # Render curl counter
+    # Setup status box
+    cv2.rectangle(image, (0, 0), (225, 73), (245, 117, 16), -1)
+
+    # Rep data
+    cv2.putText(
+        image,
+        "REPS",
+        (15, 12),
+        cv2.FONT_HERSHEY_SIMPLEX,
+        0.5,
+        (0, 0, 0),
+        1,
+        cv2.LINE_AA,
+    )
+    cv2.putText(
+        image,
+        str(counter),
+        (10, 60),
+        cv2.FONT_HERSHEY_SIMPLEX,
+        2,
+        (255, 255, 255),
+        2,
+        cv2.LINE_AA,
+    )
+
+    # Stage data
+    cv2.putText(
+        image,
+        "STAGE",
+        (65, 12),
+        cv2.FONT_HERSHEY_SIMPLEX,
+        0.5,
+        (0, 0, 0),
+        1,
+        cv2.LINE_AA,
+    )
+    cv2.putText(
+        image,
+        stage,
+        (60, 60),
+        cv2.FONT_HERSHEY_SIMPLEX,
+        2,
+        (255, 255, 255),
+        2,
+        cv2.LINE_AA,
+    )
 
 
 # Route to stream video feed
@@ -97,53 +149,7 @@ def video_feed():
                 except:
                     pass
 
-                # Render curl counter
-                # Setup status box
-                cv2.rectangle(image, (0, 0), (225, 73), (245, 117, 16), -1)
-
-                # Rep data
-                cv2.putText(
-                    image,
-                    "REPS",
-                    (15, 12),
-                    cv2.FONT_HERSHEY_SIMPLEX,
-                    0.5,
-                    (0, 0, 0),
-                    1,
-                    cv2.LINE_AA,
-                )
-                cv2.putText(
-                    image,
-                    str(counter),
-                    (10, 60),
-                    cv2.FONT_HERSHEY_SIMPLEX,
-                    2,
-                    (255, 255, 255),
-                    2,
-                    cv2.LINE_AA,
-                )
-
-                # Stage data
-                cv2.putText(
-                    image,
-                    "STAGE",
-                    (65, 12),
-                    cv2.FONT_HERSHEY_SIMPLEX,
-                    0.5,
-                    (0, 0, 0),
-                    1,
-                    cv2.LINE_AA,
-                )
-                cv2.putText(
-                    image,
-                    stage,
-                    (60, 60),
-                    cv2.FONT_HERSHEY_SIMPLEX,
-                    2,
-                    (255, 255, 255),
-                    2,
-                    cv2.LINE_AA,
-                )
+                draw_rep_counter(image, counter, stage)
 
                 # Render detections
                 mp_drawing.draw_landmarks(
