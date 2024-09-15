@@ -1,3 +1,5 @@
 Flask
 opencv-contrib-python
 mediapipe
+requests
+imutils

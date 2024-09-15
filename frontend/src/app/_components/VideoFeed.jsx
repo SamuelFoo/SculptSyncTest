@@ -173,7 +173,7 @@ const VideoFeed = () => {
             <h1>Live Video Feed</h1>
             {/* Use HTML5 video element to display video stream */}
             <img
-              src="http://localhost:5000/video_feed"
+              src="http://localhost:5001/processed_feed"
               alt="Live Video Feed"
               style={{ width: '640px', height: '480px' }}
             />
