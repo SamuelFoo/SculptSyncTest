@@ -31,11 +31,11 @@ const VideoFeed = () => {
     getConnectedCameras();
   }, []);
 
-  useEffect(() => {
-    // Disable prediction, if any, before restarting pipeline
-    videoRef.current.removeEventListener("loadeddata", () => { });
-    startPipeline(selectedCameraId);
-  }, [selectedCameraId])
+  // useEffect(() => {
+  //   // Disable prediction, if any, before restarting pipeline
+  //   videoRef.current.removeEventListener("loadeddata", () => { });
+  //   startPipeline(selectedCameraId);
+  // }, [selectedCameraId])
 
   // Start webcam
   const startPipeline = (cameraId) => {
@@ -161,14 +161,23 @@ const VideoFeed = () => {
       {/* Video Feed Section */}
       <div className="flex flex-grow flex-col items-center justify-center">
         <div className="relative">
-          <video
-            ref={videoRef}
+          {/* <video
+            // ref={videoRef}
             autoPlay
             className="z-0 top-0 left-0 border-2 border-gray-700"
             width={displayWidth}
             height={displayHeight}
             onError={(e) => console.error("Video error:", e)}
-          />
+          /> */}
+          <div>
+            <h1>Live Video Feed</h1>
+            {/* Use HTML5 video element to display video stream */}
+            <img
+              src="http://localhost:5000/video_feed"
+              alt="Live Video Feed"
+              style={{ width: '640px', height: '480px' }}
+            />
+          </div>
           <canvas
             className="absolute z-1 top-0 left-0 object-cover rounded-lg border-2 border-gray-700"
             id="output_canvas"
